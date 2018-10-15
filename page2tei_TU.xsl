@@ -7,7 +7,8 @@
     xmlns:mets="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:map="http://www.w3.org/2005/xpath-functions/map" xmlns:local="local"
     xmlns:xstring="https://github.com/dariok/XStringUtils" exclude-result-prefixes="#all"
-    xmlns:tu="timeUs" version="3.0">
+    xmlns:tu="timeUs" 
+    xmlns:temp="temporary" version="2.0">
 
     <xd:doc scope="stylesheet">
         <xd:desc>
@@ -35,27 +36,36 @@
             <teiHeader>
                 <fileDesc>
                     <titleStmt>
-                        <title><xsl:value-of select="p:Metadata/tu:title"/><xsl:choose>
-                            <xsl:when test="p:Page">, page <xsl:value-of select="p:Metadata/tu:pagenumber"/></xsl:when>
+                        <title><xsl:value-of select="p:Metadata/temp:title"/><xsl:choose>
+                            <xsl:when test="p:Page">, page <xsl:value-of select="p:Metadata/temp:pagenumber"/></xsl:when>
                         </xsl:choose> - Transcription</title>
+                        <!-- custom -->
                         <editor>Manuela Martini</editor>
-                        <respStmt><name><xsl:value-of select="p:Metadata/tu:uploader"/></name>, <resp>créateur⋅rice du document Transkribus (TRP).</resp></respStmt>
+                        <!-- end custom -->
+                        <respStmt><name><xsl:value-of select="p:Metadata/temp:uploader"/></name>, <resp>créateur⋅rice du document Transkribus (TRP).</resp></respStmt>
                     </titleStmt>
                     <publicationStmt>
+                        <!-- custom -->
                         <bibl><publisher>Time Us</publisher> (<date>2017-2020</date>) : http://timeusage.paris.inria.fr/mediawiki/index.php/Accueil</bibl>
+                        <!-- end custom -->
                     </publicationStmt>
                     <sourceDesc>
-                        <p><xsl:value-of select="p:Metadata/tu:desc"/></p>
+                        <p><xsl:value-of select="p:Metadata/temp:desc"/></p>
                     </sourceDesc>
                 </fileDesc>
                 <encodingDesc>
+                    <!-- custom -->
                     <projectDesc>TIME US est un projet ANR dont le but est de reconstituer les rémunérations et les budgets temps des travailleur⋅ses du textile dans quatre villes industrielles française (Lille, Paris, Lyon, Marseille) dans une perspective européenne et de longue durée. Il réunit une équipe pluridisciplinaire d'historiens des techniques, de l'économie et du travail, des spécialistes du traitement automatique des langues et des sociologues spécialistes des budgets familiaux. Il vise à donner des clés pour comprendre le gender gap en analysant les mutations du travail et la répartition du temps et des tâches au sein des ménages pendant la première industrialisation. Pour ce faire, le projet met en place une action de transcription et d'annotation de documents d'archives datés de la fin du XVIIe au début du XXe siècle.</projectDesc>
-                    <editorialDecl>Les transcriptions et leur annotations sont réalisées à l'aide de la plate-forme Transkribus.</editorialDecl>
+                    <editorialDecl>
+                        <p>Les transcriptions et leur annotations sont réalisées à l'aide de la plate-forme Transkribus.</p>
+                        <p>Statut de la transcription lors de son export : "<xsl:value-of select="p:Metadata/temp:tsStatus"/>".</p>
+                    </editorialDecl>
+                    <!-- end custom -->
                 </encodingDesc>
-                <xsl:if test="count(p:Metadata/tu:language) &gt; 0">
+                <xsl:if test="count(p:Metadata/temp:language) &gt; 0">
                     <profileDesc>
                         <langUsage>
-                            <xsl:for-each select="p:Metadata/tu:language">
+                            <xsl:for-each select="p:Metadata/temp:language">
                                 <language><xsl:value-of select="."/></language>
                             </xsl:for-each>
                         </langUsage>
@@ -68,46 +78,22 @@
                 </revisionDesc>
             </teiHeader>
             <xsl:if test="not($debug)">
-                <xsl:choose>
-                    <xsl:when test="p:Page">
-                        <xsl:apply-templates select="p:Page" mode="facsimile"/>
-                    </xsl:when>
-                    <xsl:when test="tu:PageGrp">
-                        <xsl:apply-templates select="tu:PageGrp" mode="facsimile"/>
-                    </xsl:when>
-                </xsl:choose>
+                <xsl:apply-templates select="p:Page" mode="facsimile"/>
             </xsl:if>
             <text>
                 <body>
-                    <xsl:choose>
-                        <xsl:when test="p:Page">
-                            <xsl:apply-templates select="p:Page" mode="text"/>
-                        </xsl:when>
-                        <xsl:when test="tu:PageGrp">
-                            <xsl:apply-templates select="tu:PageGrp" mode="text"/>
-                        </xsl:when>
-                    </xsl:choose>
+                    <xsl:apply-templates select="p:Page" mode="text"></xsl:apply-templates>
                 </body>
             </text>
         </TEI>
-    </xsl:template>
-
-
-
-    <!-- Templates for PAGE, facsimile -->
-    <xd:doc>
-        <xd:p>Create tei:facsimile</xd:p>
-    </xd:doc>
-    <xsl:template match="tu:PageGrp" mode="fascimile">
-        <xsl:apply-templates select="p:Page" mode="facsimile"/>
     </xsl:template>
 
     <xd:doc>
         <xd:p>Create tei:surface and tei:graphic</xd:p>
     </xd:doc>
     <xsl:template match="p:Page" mode="facsimile">
-        <xsl:variable name="url" select="@tu:url"/>
-        <xsl:variable name="numCurr" select="@tu:id"/>
+        <xsl:variable name="url" select="@temp:urltoimg"/>
+        <xsl:variable name="numCurr" select="@temp:id"/>
         <xsl:variable name="imageName" select="@imageFilename"/>
         <xsl:variable name="type" select="substring-after(@imageFilename, '.')"/>
 
@@ -178,13 +164,6 @@
             </xsl:if>
 
         </zone>
-    </xsl:template>
-
-    <xd:doc>
-        <xd:p>create page content</xd:p>
-    </xd:doc>
-    <xsl:template match="tu:PageGrp" mode="text">
-        <xsl:apply-templates select="p:Page" mode="text"/>
     </xsl:template>
 
     <xd:doc>
@@ -440,7 +419,7 @@
                 </orgName>
             </xsl:when>
 
-            <!-- TIME US TAGS -->
+            <!-- CUSTOM TAGS -->
             <xsl:when test="@type = 'TU_remuneration'">
                 <rs>
                     <xsl:attribute name="type">revenue</xsl:attribute>
@@ -631,7 +610,7 @@
                 </xsl:call-template>
                 <xsl:comment><xsl:value-of select="replace(replace(replace(map:get($custom, 'comment'), '\\u0020', ' '), '\\u0027', ''''), '\\u0022', '&quot;')"/></xsl:comment>
             </xsl:when>
-            <!-- END OF TIME US TAGS -->
+            <!-- END OF CUSTOM TAGS -->
 
             <xsl:otherwise>
                 <xsl:element name="{@type}">
